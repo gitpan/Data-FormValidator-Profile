@@ -1,0 +1,16 @@
+Revision history for Perl extension Data::FormValidator::Profile
+
+0.03    Mon May 10 22:30 PDT 2010
+    - new "check($data)" method, short-hand for
+      "Data::FormValidator->check($data, $profile->profile)"
+    - added docs about call-chaining, for easier profile manipulation
+
+0.02    Fri Apr 23 21:36 PDT 2010
+    - switch to Git
+    - new "set()" method, for when you want to explicitly set/override values
+      in the profile
+    - new "add()" method, to help add new fields to the profile
+    - all methods now allow for call chaining
+
+0.01    Fri Mar  7 15:15 PST 2008
+    - initial version

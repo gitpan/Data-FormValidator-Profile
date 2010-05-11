@@ -1,0 +1,12 @@
+Build.PL
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+META.yml
+Changes
+README
+lib/Data/FormValidator/Profile.pm
+t/profile.t
+t/profile-add.t
+t/pod.t
+t/pod-coverage.t
