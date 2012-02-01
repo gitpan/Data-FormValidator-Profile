@@ -6,11 +6,12 @@ package Data::FormValidator::Profile;
 use strict;
 use warnings;
 use Carp;
+use List::MoreUtils qw(part);
 
 ###############################################################################
 # Version number.
 ###############################################################################
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 ###############################################################################
 # Use the '_arrayify()' method from DFV.
@@ -38,7 +39,7 @@ sub new {
 # Returns:      $results    - DFV::Results object
 ###############################################################################
 # Checks the given '$data' against the profile.  This method simply acts as a
-# short-hand to 'Data::FormValidator->check($data, $profile->profile)'.
+# short-hand to 'Data::FormValidator->check($data,$profile->profile)'.
 ###############################################################################
 sub check {
     my ($self, $data) = @_;
@@ -63,6 +64,8 @@ sub profile {
 ###############################################################################
 # Reduces the profile so that it only contains information on the given list of
 # '@fields'.
+#
+# Returns '$self', to support call-chaining.
 ###############################################################################
 sub only {
     my ($self, @fields) = @_;
@@ -75,6 +78,8 @@ sub only {
 # Parameters:   @fields     - List of fields to exclude
 ###############################################################################
 # Removes any of the given '@fields' from the profile.
+#
+# Returns '$self', to support call-chaining.
 ###############################################################################
 sub remove {
     my ($self, @fields) = @_;
@@ -83,11 +88,75 @@ sub remove {
 }
 
 ###############################################################################
+# Subroutine:   make_optional(@fields)
+# Parameters:   @fields     - List of fields to force to optional
+###############################################################################
+# Ensures that the given set of '@fields' are set as being optional (even if
+# they were previously described as being required fields).
+#
+# Returns '$self', to support call-chaining.
+###############################################################################
+sub make_optional {
+    my ($self, @fields) = @_;
+    my $profile = $self->profile();
+
+    # Partition the existing list of required fields into those that are still
+    # going to be required, and those that are being made optional.
+    my %make_optional = map { $_ => 1 } @fields;
+    my ($required, $optional) =
+        part { exists $make_optional{$_} }
+        _arrayify($profile->{required});
+
+    # Update the lists of required/optional fields.
+    $profile->{required} = $required;
+    $profile->{optional} = [
+        _arrayify($profile->{optional}),
+        @{$optional},
+    ];
+
+    # Support call chaining.
+    return $self;
+}
+
+###############################################################################
+# Subroutine:   make_required(@fields)
+# Parameters:   @fields     - List of fields to force to required
+###############################################################################
+# Ensures that the given set of '@fields' are set as being required (even if
+# they were previously described as being optional fields).
+#
+# Returns '$self', to support call-chaining.
+###############################################################################
+sub make_required {
+    my ($self, @fields) = @_;
+    my $profile = $self->profile();
+
+    # Partition the existing list of optional fields into those that are still
+    # going to be required, and those that are being made required.
+    my %make_required = map { $_ => 1 } @fields;
+    my ($optional, $required) =
+        part { exists $make_required{$_} }
+        _arrayify($profile->{optional});
+
+    # Update the lists of required/optional fields.
+    $profile->{optional} = $optional;
+    $profile->{required} = [
+        _arrayify($profile->{required}),
+        @{$required},
+    ];
+
+    # Support call chaining.
+    return $self;
+}
+
+###############################################################################
 # Subroutine:   set(%options)
 # Parameters:   %options    - DFV options to set
 ###############################################################################
 # Explicitly sets one or more '%options' into the profile.  Useful when you
 # KNOW exactly what you want to add/do to the profile.
+#
+# Returns '$self', to support call-chaining.
 ###############################################################################
 sub set {
     my ($self, %options) = @_;
@@ -108,6 +177,8 @@ sub set {
 #
 # If the field already exists in the profile, this method throws a fatal
 # exception.
+#
+# Returns '$self', to support call-chaining.
 #
 # Acceptable '%args' include:
 #   required        - If non-zero, specifies that the field is required and is
@@ -353,8 +424,9 @@ provided either as a HASH or a HASHREF).
 
 =item B<check($data)>
 
-Checks the given C<$data> against the profile.  This method simply acts as a
-short-hand to C<Data::FormValidator-E<gt>check($data, $profile-E<gt>profile)>.
+Checks the given C<$data> against the profile. This method simply acts as a
+short-hand to
+C<Data::FormValidator-E<gt>check($data,$profile-E<gt>profile)>.
 
 =item B<profile()>
 
@@ -372,6 +444,20 @@ Returns C<$self>, to support call-chaining.
 =item B<remove(@fields)>
 
 Removes any of the given C<@fields> from the profile.
+
+Returns C<$self>, to support call-chaining.
+
+=item B<make_optional(@fields)>
+
+Ensures that the given set of C<@fields> are set as being optional (even if
+they were previously described as being required fields).
+
+Returns C<$self>, to support call-chaining.
+
+=item B<make_required(@fields)>
+
+Ensures that the given set of C<@fields> are set as being required (even if
+they were previously described as being optional fields).
 
 Returns C<$self>, to support call-chaining.
 

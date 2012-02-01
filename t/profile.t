@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::More tests => 23;
 use Test::Exception;
 BEGIN {
     use_ok( 'Data::FormValidator::Profile' );
@@ -143,4 +143,40 @@ call_chaining: {
             ->remove(qw(that))
             ->add('foo')
         } '... call chaining';
+}
+
+###############################################################################
+# Turning required fields into optional ones
+make_optional: {
+    my %profile = (
+        required => [qw( this that )],
+        optional => [qw( other thing )],
+    );
+    my $object = Data::FormValidator::Profile->new( %profile );
+    isa_ok $object, 'Data::FormValidator::Profile';
+
+    $object->make_optional(qw( this ));
+    my %expect = (
+        required => [qw( that )],
+        optional => [qw( other thing this )],
+    );
+    is_deeply $object->profile, \%expect, '... fields made optional';
+}
+
+###############################################################################
+# Turning optional fields into required ones
+make_required: {
+    my %profile = (
+        required => [qw( this that )],
+        optional => [qw( other thing )],
+    );
+    my $object = Data::FormValidator::Profile->new( %profile );
+    isa_ok $object, 'Data::FormValidator::Profile';
+
+    $object->make_required(qw( thing ));
+    my %expect = (
+        required => [qw( this that thing )],
+        optional => [qw( other )],
+    );
+    is_deeply $object->profile, \%expect, '... fields made required';
 }
