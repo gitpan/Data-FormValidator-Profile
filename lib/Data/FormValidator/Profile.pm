@@ -11,7 +11,7 @@ use List::MoreUtils qw(part);
 ###############################################################################
 # Version number.
 ###############################################################################
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 ###############################################################################
 # Use the '_arrayify()' method from DFV.
@@ -56,6 +56,26 @@ sub check {
 sub profile {
     my $self = shift;
     return $self->{'profile'};
+}
+
+###############################################################################
+# Subroutine:   required()
+###############################################################################
+# Returns the list of "required" fields in the validation profile.
+###############################################################################
+sub required {
+    my $self = shift;
+    return _arrayify($self->{profile}{required});
+}
+
+###############################################################################
+# Subroutine:   optional()
+###############################################################################
+# Returns the list of "optional" fields in the validation profile.
+###############################################################################
+sub optional {
+    my $self = shift;
+    return _arrayify($self->{profile}{optional});
 }
 
 ###############################################################################
@@ -326,6 +346,10 @@ Data::FormValidator::Profile - Profile object for Data::FormValidator
       required  => [qw( some other thing )],
       } );
 
+  # query the optional/required fields in the profile
+  @optional = $profile->optional();
+  @required = $profile->required();
+
   # reduce the profile to just a limited set of fields
   $profile->only( qw(this that) );
 
@@ -433,6 +457,14 @@ C<Data::FormValidator-E<gt>check($data,$profile-E<gt>profile)>.
 Returns the actual profile, as a hash-ref. You need to call this method
 when you want to send the profile through to C<Data::FormValidator> to do
 data validation.
+
+=item B<required()>
+
+Returns the list of "required" fields in the validation profile.
+
+=item B<optional()>
+
+Returns the list of "optional" fields in the validation profile.
 
 =item B<only(@fields)>
 
